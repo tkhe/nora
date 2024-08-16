@@ -4,6 +4,7 @@
 
 #include "box_iou_rotated/box_iou_rotated.h"
 #include "cocoeval/cocoeval.h"
+#include "ms_deform_attn/ms_deform_attn.h"
 
 namespace nora
 {
@@ -80,6 +81,9 @@ namespace nora
         m.def("COCOevalEvaluateImages", &COCOeval::EvaluateImages, "COCOeval::EvaluateImages");
         pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation").def(pybind11::init<>());
         pybind11::class_<COCOeval::InstanceAnnotation>(m, "InstanceAnnotation").def(pybind11::init<uint64_t, double, double, bool, bool>());
+
+        m.def("ms_deform_attn_forward", &ms_deform_attn_forward, "ms_deform_attn_forward");
+        m.def("ms_deform_attn_backward", &ms_deform_attn_backward, "ms_deform_attn_backward");
     }
 
     TORCH_LIBRARY(nora, m)
