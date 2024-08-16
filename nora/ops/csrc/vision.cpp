@@ -3,6 +3,7 @@
 #include <torch/extension.h>
 
 #include "box_iou_rotated/box_iou_rotated.h"
+#include "cocoeval/cocoeval.h"
 
 namespace nora
 {
@@ -74,6 +75,11 @@ namespace nora
         m.def("get_compiler_version", &get_compiler_version, "get_compiler_version");
         m.def("get_cuda_version", &get_cuda_version, "get_cuda_version");
         m.def("has_cuda", &has_cuda, "has_cuda");
+
+        m.def("COCOevalAccumulate", &COCOeval::Accumulate, "COCOeval::Accumulate");
+        m.def("COCOevalEvaluateImages", &COCOeval::EvaluateImages, "COCOeval::EvaluateImages");
+        pybind11::class_<COCOeval::ImageEvaluation>(m, "ImageEvaluation").def(pybind11::init<>());
+        pybind11::class_<COCOeval::InstanceAnnotation>(m, "InstanceAnnotation").def(pybind11::init<uint64_t, double, double, bool, bool>());
     }
 
     TORCH_LIBRARY(nora, m)
