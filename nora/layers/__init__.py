@@ -6,3 +6,4 @@ from .misc import *
 from .norm import *
 from .roi_align import *
 from .shape_spec import *
+from .weight_init import *
