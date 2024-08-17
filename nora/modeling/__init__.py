@@ -1,3 +1,4 @@
+from .anchor_generator import *
 from .backbone import *
 from .box_coder import *
 from .dense_head import *
