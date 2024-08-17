@@ -1,5 +1,6 @@
 from .base import *
 from .convnext import *
+from .convnext_v2 import *
 from .cspnext import *
 from .mvit_v2 import *
 from .resnet import *
