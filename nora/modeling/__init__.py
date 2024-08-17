@@ -6,3 +6,4 @@ from .matcher import *
 from .meta_arch import *
 from .neck import *
 from .postprocessing import *
+from .sem_seg_head import *
