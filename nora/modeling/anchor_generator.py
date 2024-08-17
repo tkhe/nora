@@ -13,6 +13,7 @@ from nora.structures import Boxes
 
 __all__ = [
     "AnchorGenerator",
+    "PointGenerator",
 ]
 
 
@@ -186,3 +187,39 @@ class AnchorGenerator(nn.Module):
         grid_sizes = [feature_map.shape[-2:] for feature_map in features]
         anchors_over_all_feature_maps = self._grid_anchors(grid_sizes)
         return [Boxes(x) for x in anchors_over_all_feature_maps]
+
+
+class PointGenerator(nn.Module):
+    def __init__(self, strides: List[int], offset: float = 0.0):
+        super().__init__()
+
+        assert 0.0 <= offset < 1.0, f"`offset` should be in [0, 1), but got {offset}!"
+
+        self.strides = strides
+        self.offset = offset
+
+        self.cell_points = self._calculate_points()
+
+    def _calculate_points(self):
+        cell_points = [torch.tensor([0.0, 0.0]) for _ in range(len(self.strides))]
+        return BufferList(cell_points)
+
+    @property
+    def num_points(self):
+        return [1 for _ in self.strides]
+
+    def _grid_points(self, grid_sizes: List[List[int]]):
+        points = []
+        buffers: List[torch.Tensor] = [x[1] for x in self.cell_points.named_buffers()]
+        for size, stride, base_point in zip(grid_sizes, self.strides, buffers):
+            shift_x, shift_y = _create_grid_offsets(size, stride, self.offset, base_point)
+            shifts = torch.stack((shift_x, shift_y), dim=1)
+
+            points.append((shifts.view(-1, 1, 2) + base_point.view(1, -1, 2)).reshape(-1, 2))
+
+        return points
+
+    def forward(self, features: List[torch.Tensor]):
+        grid_sizes = [feature_map.shape[-2:] for feature_map in features]
+        points_over_all_feature_maps = self._grid_points(grid_sizes)
+        return points_over_all_feature_maps
