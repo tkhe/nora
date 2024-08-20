@@ -8,6 +8,7 @@ from typing import Union
 import numpy as np
 
 from .augmentation import Augmentation
+from .augmentation import _get_aug_input_args
 from .augmentation import _transform_to_aug
 from .transform import CropTransform
 from .transform import HorizontalFlipTransform
@@ -21,6 +22,7 @@ from .transform import VerticalFlipTransform
 
 __all__ = [
     "FixedSizeCrop",
+    "OneOf",
     "RandomApply",
     "RandomCrop",
     "RandomFlip",
@@ -446,3 +448,25 @@ class RandomRotation(Augmentation):
             return NoOpTransform()
 
         return RotationTransform(h, w, angle, expand=self.expand, center=center, interp=self.interp)
+
+
+class OneOf(Augmentation):
+    def __init__(
+        self,
+        augmentations: List[Augmentation],
+        prob: float = 0.5,
+    ):
+        super().__init__()
+
+        self.augmentations = augmentations
+        self.prob = prob
+
+    def __call__(self, aug_input):
+        do = self._rand_range() < self.prob
+        if do:
+            aug = np.random.choice(self.augmentations, 1)
+            tfm = aug(aug_input)
+        else:
+            tfm = NoOpTransform()
+
+        return tfm
