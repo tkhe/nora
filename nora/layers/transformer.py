@@ -24,6 +24,7 @@ __all__ = [
     "MultiHeadAttention",
     "SinePositionEmbedding",
     "add_decomposed_rel_pos",
+    "coordinate_to_embedding",
     "get_abs_pos",
     "get_rel_pos",
     "window_partition",
@@ -716,3 +717,54 @@ def get_abs_pos(abs_pos, has_cls_token, hw):
         return new_abs_pos.permute(0, 2, 3, 1)
     else:
         return abs_pos.reshape(1, h, w, -1)
+
+
+def coordinate_to_embedding(
+    coord_tensor: torch.Tensor,
+    num_feats: int = 128,
+    temperature: int = 10000,
+    scale: Optional[float] = None
+):
+    """Convert coordinate tensor to positional encoding.
+
+    Args:
+        coord_tensor (Tensor): Coordinate tensor to be converted to
+            positional encoding. With the last dimension as 2 or 4.
+        num_feats (int, optional): The feature dimension for each position
+            along x-axis or y-axis. Note the final returned dimension
+            for each position is 2 times of this value. Defaults to 128.
+        temperature (int, optional): The temperature used for scaling
+            the position embedding. Defaults to 10000.
+        scale (float, optional): A scale factor that scales the position
+            embedding. The scale will be used only when `normalize` is True.
+            Defaults to 2*pi.
+    Returns:
+        Tensor: Returned encoded positional tensor.
+    """
+    if scale is None:
+        scale = 2 * math.pi
+
+    dim_t = torch.arange(num_feats, dtype=torch.float32, device=coord_tensor.device)
+    dim_t = temperature ** (2 * (dim_t // 2) / num_feats)
+    x_embed = coord_tensor[..., 0] * scale
+    y_embed = coord_tensor[..., 1] * scale
+    pos_x = x_embed[..., None] / dim_t
+    pos_y = y_embed[..., None] / dim_t
+    pos_x = torch.stack((pos_x[..., 0::2].sin(), pos_x[..., 1::2].cos()), dim=-1).flatten(2)
+    pos_y = torch.stack((pos_y[..., 0::2].sin(), pos_y[..., 1::2].cos()), dim=-1).flatten(2)
+
+    if coord_tensor.size(-1) == 2:
+        pos = torch.cat((pos_y, pos_x), dim=-1)
+    elif coord_tensor.size(-1) == 4:
+        w_embed = coord_tensor[..., 2] * scale
+        pos_w = w_embed[..., None] / dim_t
+        pos_w = torch.stack((pos_w[..., 0::2].sin(), pos_w[..., 1::2].cos()), dim=-1).flatten(2)
+
+        h_embed = coord_tensor[..., 3] * scale
+        pos_h = h_embed[..., None] / dim_t
+        pos_h = torch.stack((pos_h[..., 0::2].sin(), pos_h[..., 1::2].cos()), dim=-1).flatten(2)
+
+        pos = torch.cat((pos_y, pos_x, pos_w, pos_h), dim=-1)
+    else:
+        raise ValueError(f"Unknown pos_tensor shape(-1): {coord_tensor.size(-1)}")
+    return pos
