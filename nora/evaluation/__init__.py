@@ -1,6 +1,7 @@
 from .cityscapes_evaluation import *
 from .coco_evaluation import *
 from .evaluator import *
+from .lvis_evaluation import *
 from .panoptic_evaluation import *
 from .pascal_voc_evaluation import *
 from .rotated_coco_evaluation import *
