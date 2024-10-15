@@ -1,3 +1,4 @@
+from .ade20k import *
 from .cityscapes import *
 from .cityscapes_panoptic import *
 from .coco import *
