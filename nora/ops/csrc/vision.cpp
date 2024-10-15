@@ -2,6 +2,8 @@
 
 #include <torch/extension.h>
 
+#include "box_iou_rotated/box_iou_rotated.h"
+
 namespace nora
 {
 #ifdef WITH_CUDA
@@ -76,5 +78,6 @@ namespace nora
 
     TORCH_LIBRARY(nora, m)
     {
+        m.def("box_iou_rotated", &box_iou_rotated);
     }
 }  // namespace nora
