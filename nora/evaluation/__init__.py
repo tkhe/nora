@@ -1,3 +1,4 @@
+from .cityscapes_evaluation import *
 from .coco_evaluation import *
 from .evaluator import *
 from .panoptic_evaluation import *
