@@ -1,4 +1,5 @@
 from .backbone import *
+from .box_coder import *
 from .dense_head import *
 from .loss import *
 from .matcher import *
