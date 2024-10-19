@@ -1,4 +1,5 @@
 from .base import *
+from .mvit_v2 import *
 from .resnet import *
 from .resnext import *
 from .swin_transformer import *
